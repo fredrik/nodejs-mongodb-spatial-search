@@ -8,13 +8,20 @@ def import_data(csv_file):
   db = connection.latlong
   reader = csv.reader(open(csv_file, 'rb'))
   for row in reader:
-    lat, lon, name, phone_address = row
+    try:
+      lon, lat, name, city, phone = row
+    except ValueError:
+      print 'value error: %s' % row
+      continue
     lat = float(lat)
     lon = float(lon)
-    phone_address = map(lambda s: s.strip(), phone_address.split(';'))
-    phone, address = phone_address[0:2]
-    print { 'loc': {'lat': lat, 'long': lon}, 'name': name, 'address': address}
-    db.biz.insert({ 'loc': {'lat': lat, 'long': lon}, 'name': name, 'address': address})
+    name = name.strip()
+    city = city.split('-')[1]
+    category = 'pub'
+    
+    data = { 'loc': {'lat': lat, 'long': lon}, 'name': name, 'city': city, 'category': category}
+    print data
+    db.biz.insert(data)
   print "ok"
 
 if __name__ == '__main__':
