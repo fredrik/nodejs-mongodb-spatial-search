@@ -20,53 +20,51 @@ function display(result) {
   return html;
 }
 
+function htmlHeader(query, lat, lon) {
+  term = query + " near [" + lat + ", " + lon + "]";
+  html  = "<html>\n"
+  html += "<head><title>Search results: " + term + "</title></head>\n"
+  html += "<body>\n"
+  return html;
+}
+
 http.createServer(function(req, res) {
 
   p = url.parse(req.url, true)
-
   if (p['pathname'] == '/search') {
+    
+    // error handling.
     if (!p['query'] || !p['query']['q'] || !p['query']['lat'] || !p['query']['lon']) {
       res.writeHead(200, {'content-type': 'text/html'});
       res.write("MISSING INPUTS.")
       res.end()
       return
     }
+
+    // parameters.
     q   = p['query']['q']
     lat = parseFloat(p['query']['lat']) || 0
     lon = parseFloat(p['query']['lon']) || 0
     
     res.writeHead(200, {'content-type': 'text/html'});
-    res.write("<html><body>\n");
+    res.write(htmlHeader(q, lat, lon));
 
     // query mongodb.
     db.collection('biz', function(err, places) {
-      if (err) {
-        sys.puts("ERR:" + err)
-      }
-      //sys.puts("ERR: " + err);
-      //sys.puts(new Error().stack)
-      //sys.puts(sys.inspect(places));
-      if (places) {
-        places.find({'name': new RegExp(q), loc : { $near : [lat,lon]}}, {'limit': 10}, function(err, cursor) {
-         sys.puts("I'M IN A CALLBACK?!")
-         sys.puts(sys.inspect(cursor))
-         cursor.toArray(function(err, docs) {
-           sys.puts("Printing docs from Array")
-           docs.forEach(function(doc) {
-             res.write(display(doc));
-             sys.puts("Doc from Array " + sys.inspect(doc));
-           });
-           sys.puts("ok, done.")
-           res.write("</body></html>\n")
-           res.end();
-         });
-        })
-      } else {
-        sys.puts("not places. err: " + err)
-      }
-    })
+      if (err) { sys.puts("ERR:" + err) }
 
-    sys.puts('what?')
+      places.find(
+        {'name': new RegExp(q, 'i'), loc : { $near : [lat,lon]}},
+        {'limit': 10},
+        function(err, cursor) { cursor.toArray(function(err, docs) {
+          docs.forEach(function(doc) {
+            res.write(display(doc));
+          });
+          res.write("</body></html>\n");
+          res.end();
+        });
+      });
+    })
     return
   }
 
