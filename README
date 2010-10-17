@@ -1,12 +1,9 @@
-2. Can you build a search engine where I can query by business name and
-location (expressed as latitude/longitude coordinates) and get the closest
-matching businesess from #1 and their associated photos? Example query would
-be: [harrods near 51.499446,-0.163636]
+sspatial search - nodejs webserver backed by mongodb
 
-Some concepts you may need to learn about:
+import data:
+$> python import.py data/pubs.csv
 
-Geocoding - getting a latitude/longitude coordinate from an address:
-http://code.google.com/apis/maps/documentation/geocoding/
+run server:
+$> node server.js
 
-Spatial indexing - allows efficient searching for objects in a 2D space. I
-believe there is built-in support for this in Lucene and MongoDB.
+=> http://localhost:8000/
